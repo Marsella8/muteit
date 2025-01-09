@@ -47,7 +47,7 @@ class InputNode:
 @dataclass
 class OperatorNode:
     func: Operator
-    inputs: tuple[Union[InputNode, 'OperatorNode']]
+    inputs: list[Union[InputNode, 'OperatorNode']]
     id: NodeID = field(default_factory=NodeIDGenerator.next_id)
     def __hash__(self):
         return self.id
@@ -67,16 +67,16 @@ class OutputNode:
 
 Node = InputNode | OperatorNode | OutputNode
 
-@dataclass(frozen=True)
+@dataclass
 class ComputationGraph:
     input_nodes: tuple[InputNode]
-    operator_nodes: frozenset[OperatorNode]
+    operator_nodes: set[OperatorNode]
     output_nodes: tuple[OutputNode]
 
     @property
     def nodes(self) -> set[Node]:
         return set(self.input_nodes) | self.operator_nodes | set(self.output_nodes)
-    
+
 
 @dataclass
 class DSL:
@@ -89,29 +89,15 @@ class SwapOperatorMutation:
     to_swap : OperatorNode
     new_op: Operator
 
-@dataclass()
+@dataclass(frozen=True)
 class SwapDependencyMutation:
-    pass
+    target_node : OperatorNode
+    target_input_idx : int
+    new_input : InputNode | OperatorNode
 
-@dataclass
-class AddDependencyMutation:
-    pass
+@dataclass(frozen=True)
+class AddOperatorAsDependencyMutation:
+    dep_to_sub : SwapDependencyMutation
+    new_input : InputNode | OperatorNode
 
-@dataclass
-class ReplaceNodeMutation:
-    pass
-
-Mutation = SwapOperatorMutation | SwapDependencyMutation | AddDependencyMutation | ReplaceNodeMutation
-
-
-#change an argument (type checking)
-#change the function (type checks)
-#change argument with function (and the arguments are filled with previous things).
-
-# This can describe all functions.
-# Note that input and output node cannot be changed.
-# Also one to delete a node and replace all appearances with another thing that type checks.;
-
-# change  -> add(int, int)
-
-# change 
+Mutation = SwapOperatorMutation | SwapDependencyMutation | AddOperatorAsDependencyMutation

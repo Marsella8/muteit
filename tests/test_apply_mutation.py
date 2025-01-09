@@ -25,7 +25,7 @@ dsl: DSL = get_dsl((add, mul, one, sub, neg, abs))
 def test_apply_swap_operator_mutation():
     input1 = InputNode(int, 0)
     input2 = InputNode(int, 1)
-    target_node = OperatorNode(Operator(add), (input1, input2), 2)
+    target_node = OperatorNode(Operator(add), [input1, input2], 2)
     output_node = OutputNode(target_node, 3)
     
     computation_graph = ComputationGraph(

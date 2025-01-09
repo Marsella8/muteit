@@ -57,11 +57,11 @@ def _get_operator_nodes(f : Callable, dsl : DSL, var_name_to_node_mapping : dict
     for asst in statements:
         var_name = asst.targets[0].id
         func = dsl.terms[asst.value.func.id]
-        deps = tuple(var_name_to_node_mapping[a.id] for a in asst.value.args)
+        deps = [var_name_to_node_mapping[a.id] for a in asst.value.args]
         node = OperatorNode(func, deps)
         nodes.add(node)
         var_name_to_node_mapping[var_name] = node
-    return frozenset(nodes)
+    return nodes
 
 def _get_output_nodes(f: Callable, var_name_to_node_mapping: dict[str, Node]) -> tuple[OutputNode]:
 
