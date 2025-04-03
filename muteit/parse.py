@@ -5,18 +5,16 @@ import inspect
 import ast
 
 
-import ast
-
-
-def _get_statements(f : Callable):
+def _get_statements(f: Callable):
     source = inspect.getsource(f)
     tree = ast.parse(source)
     body = tree.body[0].body
     return list(body)
 
-def program_is_well_shaped(f: Callable, dsl : DSL) -> bool:
+
+def program_is_well_shaped(f: Callable, dsl: DSL) -> bool:
     statements = _get_statements(f)
-    
+
     assigned_vars = set()
     for stmt in statements:
         if isinstance(stmt, ast.Assign):
@@ -29,7 +27,7 @@ def program_is_well_shaped(f: Callable, dsl : DSL) -> bool:
     for stmt in statements[:-1]:
         if isinstance(stmt, ast.Assign):
             if not isinstance(stmt.value, ast.Call):
-                return False 
+                return False
             func_name = stmt.value.func.id
             if func_name not in [term.name for term in dsl.terms]:
                 return False
@@ -45,13 +43,19 @@ def program_is_well_shaped(f: Callable, dsl : DSL) -> bool:
             return True
     return False
 
-def _get_input_nodes(f : Callable, var_name_to_node_mapping : dict[str, Node]) -> tuple[InputNode]:
+
+def _get_input_nodes(
+    f: Callable, var_name_to_node_mapping: dict[str, Node]
+) -> tuple[InputNode]:
     input_nodes = tuple(InputNode(tp) for tp in get_signature(f).input_type)
     argument_names = [param.name for param in inspect.signature(f).parameters.values()]
     var_name_to_node_mapping |= dict(zip(argument_names, input_nodes))
     return input_nodes
 
-def _get_operator_nodes(f : Callable, dsl : DSL, var_name_to_node_mapping : dict[str, Node]) -> frozenset[OperatorNode]:
+
+def _get_operator_nodes(
+    f: Callable, dsl: DSL, var_name_to_node_mapping: dict[str, Node]
+) -> frozenset[OperatorNode]:
     statements = _get_statements(f)[:-1]
     nodes = set()
     for asst in statements:
@@ -63,8 +67,10 @@ def _get_operator_nodes(f : Callable, dsl : DSL, var_name_to_node_mapping : dict
         var_name_to_node_mapping[var_name] = node
     return nodes
 
-def _get_output_nodes(f: Callable, var_name_to_node_mapping: dict[str, Node]) -> tuple[OutputNode]:
 
+def _get_output_nodes(
+    f: Callable, var_name_to_node_mapping: dict[str, Node]
+) -> tuple[OutputNode]:
     stmt = _get_statements(f)[-1]
 
     if isinstance(stmt.value, ast.Name):
@@ -79,14 +85,15 @@ def _get_output_nodes(f: Callable, var_name_to_node_mapping: dict[str, Node]) ->
             output_nodes.append(OutputNode(dep_node))
         return tuple(output_nodes)
 
+
 def parse(f: Callable, dsl: DSL) -> ComputationGraph:
     var_name_to_node_mapping = {}
-    input_nodes = _get_input_nodes(f, var_name_to_node_mapping)        
+    input_nodes = _get_input_nodes(f, var_name_to_node_mapping)
     operator_nodes = _get_operator_nodes(f, dsl, var_name_to_node_mapping)
     output_nodes = _get_output_nodes(f, var_name_to_node_mapping)
-    
+
     return ComputationGraph(
         input_nodes=input_nodes,
         operator_nodes=operator_nodes,
-        output_nodes=output_nodes
+        output_nodes=output_nodes,
     )
