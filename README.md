@@ -1,6 +1,8 @@
-Fun toy project for working with computation graph non-semantically equivalent mutations.
+Library for custom program mutation.
 
-How it works:
-- Define a DSL
-- Build a program using the DSL
-The engine will convert your program to a computation graph and apply intermediate mutations (changing inputs, changing operators, adding new operators), while still making sure it type-checks.
+Write a custom DSL and a starting program. The engine will:
+- Turn it into a computation graph.
+- Find all available substitutions which are type compatible.
+- Select a substitution and apply it.
+
+Different substitution engines are available, such as random and mcts style mutation
